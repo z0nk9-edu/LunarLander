@@ -17,6 +17,11 @@ clock = pygame.time.Clock()
 
 
 async def main():
+    class Ship:
+        def __init__(self, pos: pygame.math.Vector2, angle: float):
+            self.pos = pos
+            self.angle_rads = angle
+
     running = True
     while running:
         for event in pygame.event.get():
