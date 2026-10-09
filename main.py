@@ -62,7 +62,7 @@ async def main():
             ship.angle_rads -= math.radians(5)
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             ship.angle_rads += math.radians(5)
-        if keys[pygame.K_SPACE]:
+        if keys[pygame.K_SPACE] or keys[pygame.K_UP] or keys[pygame.K_w]:
             ship.vel += (
                 pygame.math.Vector2(
                     math.cos(ship.angle_rads), math.sin(ship.angle_rads)
