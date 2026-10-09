@@ -41,6 +41,15 @@ async def main():
                 ],
             )
 
+    class Obstacles:
+        def __init__(self, width, pos):
+            self.height = 5
+            self.width = width
+            self.pos = pos
+
+        def draw(self):
+            pygame.draw.rect(screen, (204,20,20), (0, , self.width, self.height))
+    
     running = True
     ship = Ship(pygame.math.Vector2(WIDTH / 2, HEIGHT / 2), -math.pi / 2)
     while running:
