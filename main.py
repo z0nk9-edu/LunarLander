@@ -21,11 +21,11 @@ async def main():
         def __init__(self, pos: pygame.math.Vector2, angle: float):
             self.pos = pos
             self.angle_rads = angle
-            self.vel = pygame.math.Vector2(0, 0)
+            self.vel = pygame.math.Vector2(0, 5)
 
         def move(self):
             self.pos += self.vel
-            self.vel *= 0.97
+            self.vel.y += 0.5
 
         def draw(self):
             draw_at = pygame.math.Vector2(self.pos.x, HEIGHT / 2)
@@ -41,8 +41,18 @@ async def main():
                 ],
             )
 
-    running = True
     ship = Ship(pygame.math.Vector2(WIDTH / 2, HEIGHT / 2), -math.pi / 2)
+    fuel_image = pygame.image.load("assets/fuel_cell.png").convert_alpha()
+    fuel_image = pygame.transform.scale(fuel_image, (50, 50))
+
+    class FuelCell:
+        def __init__(self, pos):
+            self.pos = pos
+
+        def draw(self):
+            screen.blit(fuel_image, self.pos)
+
+    running = True
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
