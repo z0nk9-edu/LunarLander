@@ -118,6 +118,46 @@ async def main():
         def draw(self):
             screen.blit(fuel_image, self.pos)
 
+    class Obstacle:
+        def __init__(self, x, y, width, height):
+            self.rect = pygame.Rect(x, y, width, height)
+            self.color = (181, 18, 45)
+
+        def draw(self, camera_y):
+            draw_rect = self.rect.copy()
+            draw_rect.y -= camera_y
+            pygame.draw.rect(screen, self.color, draw_rect)
+
+    def generate_obstacle(y):
+            obstacle_type = random.randint(1,3)
+            height = 40
+            if obstacle_type == 1:
+                width = random.randint(50, 150)
+                x_pos = random.randint(0, WIDTH - width)
+                return [Obstacle(x_pos, y, width, height)]
+            elif obstacle_type == 2:
+                side = random.choice(['left', 'right'])
+                gap = random.randint(150,250)
+                first_width = random.randint(150, 300)
+                second_width = random.randint(150, 300)
+
+                if side == 'left':
+                    second_x = first_width + gap
+                    return [Obstacle(0, y, first_width, height), Obstacle(second_x, y, second_width, height)]
+                else:
+                    first_x = WIDTH - first_width
+                    second_x = first_x - gap - second_width
+                    return [Obstacle(second_x, y, second_width, height), Obstacle(first_x, y, first_width, height)]
+            else:
+                gap = random.randint(150, 250)
+                first_width = random.randint(150, 300)
+                second_width = random.randint(150, 300)
+                return [Obstacle(0, y, first_width, height), Obstacle(WIDTH - second_width, y, second_width, height)]
+
+    obstacles = []
+    for y in range(800, 30000, 400):
+        obstacles.extend(generate_obstacle(y))
+    
     running = True
     while running:
         for event in pygame.event.get():
@@ -136,7 +176,10 @@ async def main():
 
         screen.fill((0, 0, 0))
         ship.draw()
-        drone.draw(camera_y=ship.pos.y - HEIGHT / 2)
+        camera_y = ship.pos.y - HEIGHT / 2
+        for obs in obstacles:
+            obs.draw(camera_y)
+        drone.draw(camera_y)
         pygame.display.flip()
         await asyncio.sleep(0)
     pygame.quit()
