@@ -55,11 +55,7 @@ async def main():
         nonlocal running, ship, drone
         running = await yes_no_choice(message)
         ship = Ship(pygame.math.Vector2(WIDTH / 2, HEIGHT / 2), -math.pi / 2)
-        drone = SentryDrone(
-            pygame.math.Vector2(WIDTH / 2 + 100, ship.pos.y - 220),
-            patrol_min_y=ship.pos.y - 220,
-            patrol_max_y=ship.pos.y + 400,
-        )
+        drone = SentryDrone(pygame.math.Vector2(WIDTH / 2 + 100, ship.pos.y - 220))
 
     class Ship:
         RADIUS = 15
@@ -73,6 +69,12 @@ async def main():
         def move(self):
             self.pos += self.vel
             self.vel.y += 0.05
+            if self.pos.x <= self.RADIUS:
+                self.pos.x = self.RADIUS
+                self.vel.x = max(0.0, self.vel.x)
+            elif self.pos.x >= WIDTH - self.RADIUS:
+                self.pos.x = WIDTH - self.RADIUS
+                self.vel.x = min(0.0, self.vel.x)
 
         def thrust(self):
             if self.fuel > 0:
@@ -110,6 +112,8 @@ async def main():
     class SentryDrone:
         RADIUS = 15
         PATROL_SPEED = 45
+        GRAVITY = 220
+        THROTTLE_ACCEL = 260
         CHASE_ACCEL = 200
         MAX_SPEED = 200
         VIEW_RANGE = 500
@@ -117,13 +121,9 @@ async def main():
         LOST_TARGET_TIME_LIMIT = 2.0
         ARROW_SIDE_ANGLE = 2.5
 
-        def __init__(
-            self, pos: pygame.math.Vector2, patrol_min_y: float, patrol_max_y: float
-        ):
+        def __init__(self, pos: pygame.math.Vector2):
             self.pos = pygame.math.Vector2(pos)
             self.vel = pygame.math.Vector2()
-            self.patrol_min_y = patrol_min_y
-            self.patrol_max_y = patrol_max_y
             self.facing = pygame.math.Vector2(0, 1)
             self.state = "PATROL"
             self.lost_target_time = 0.0
@@ -155,18 +155,21 @@ async def main():
                     if self.lost_target_time >= self.LOST_TARGET_TIME_LIMIT:
                         self.state = "PATROL"
                         self.vel.update(0, 0)
-                        self.facing.update(0, 1 if self.facing.y >= 0 else -1)
+                        self.facing.update(0, 1)
                 self.pos += self.vel * dt
+                if self.pos.x <= self.RADIUS:
+                    self.pos.x = self.RADIUS
+                    self.vel.x = max(0.0, self.vel.x)
+                elif self.pos.x >= WIDTH - self.RADIUS:
+                    self.pos.x = WIDTH - self.RADIUS
+                    self.vel.x = min(0.0, self.vel.x)
                 return
 
-            self.vel.y = self.facing.y * self.PATROL_SPEED
+            self.facing.update(0, 1)
+            self.vel.y += self.GRAVITY * dt
+            if self.vel.y > self.PATROL_SPEED:
+                self.vel.y = max(self.PATROL_SPEED, self.vel.y - self.THROTTLE_ACCEL * dt)
             self.pos.y += self.vel.y * dt
-            if self.pos.y <= self.patrol_min_y:
-                self.pos.y = self.patrol_min_y
-                self.facing.update(0, 1)
-            elif self.pos.y >= self.patrol_max_y:
-                self.pos.y = self.patrol_max_y
-                self.facing.update(0, -1)
 
         def draw(self, camera_y: float):
             draw_at = pygame.math.Vector2(self.pos.x, self.pos.y - camera_y)
@@ -182,11 +185,7 @@ async def main():
 
     running = True
     ship = Ship(pygame.math.Vector2(WIDTH / 2, HEIGHT / 2), -math.pi / 2)
-    drone = SentryDrone(
-        pygame.math.Vector2(WIDTH / 2 + 100, ship.pos.y - 220),
-        patrol_min_y=ship.pos.y - 220,
-        patrol_max_y=ship.pos.y + 400,
-    )
+    drone = SentryDrone(pygame.math.Vector2(WIDTH / 2 + 100, ship.pos.y - 220))
     fuel_image = pygame.image.load("assets/fuel_cell.png").convert_alpha()
     fuel_image = pygame.transform.scale(fuel_image, (50, 50))
     FUEL_CELL_SIZE = 50
