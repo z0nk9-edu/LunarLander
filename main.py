@@ -213,7 +213,7 @@ async def main():
     def generate_obstacle(y):
         obstacle_type = random.randint(1, 3)
         if obstacle_type == 1:
-            width = random.randint(50, 150)
+            width = random.randint(100, 400)
             x_pos = random.randint(0, WIDTH - width)
             return [Obstacle(x_pos, y, width, Obstacle.HEIGHT)]
         elif obstacle_type == 2:
