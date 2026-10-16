@@ -64,7 +64,7 @@ async def main():
             self.pos = pos
             self.angle_rads = angle
             self.vel = pygame.math.Vector2(0, 5)
-            self.fuel = 1000
+            self.fuel = 500
 
         def move(self):
             self.pos += self.vel
@@ -168,7 +168,9 @@ async def main():
             self.facing.update(0, 1)
             self.vel.y += self.GRAVITY * dt
             if self.vel.y > self.PATROL_SPEED:
-                self.vel.y = max(self.PATROL_SPEED, self.vel.y - self.THROTTLE_ACCEL * dt)
+                self.vel.y = max(
+                    self.PATROL_SPEED, self.vel.y - self.THROTTLE_ACCEL * dt
+                )
             self.pos.y += self.vel.y * dt
 
         def draw(self, camera_y: float):
